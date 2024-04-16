@@ -62,16 +62,10 @@ Sub passData()
     
         For year = 2014 To 2023
         
-            Cells(year - 2012, 1).Value = year
-            
-            
-            ' Effective tax rate
-            Cells(year - 2012, numFields + 3).Value = (Cells(year - 2012, 13).Value / Cells(year - 2012, 4).Value) - 1
-            
-            
+            Cells(year - 2012, 1).Value = year          
             
             ' Market Value of Debt
-            Cells(year - 2012, numFields + 4).Value = Cells(year - 2012, 9).Value + Cells(year - 2012, 11).Value - Cells(year - 2012, 5).Value
+            Cells(year - 2012, numFields + 3).Value = Cells(year - 2012, 9).Value + Cells(year - 2012, 11).Value - Cells(year - 2012, 5).Value
             
             ' Common Shares outstanding if missing
             If Cells(year - 2012, 10).Value = "n.a." Then Cells(year - 2012, 10).Value = _
@@ -86,9 +80,8 @@ Sub passData()
             
         Next
             
-            Cells(1, numFields + 3) = "Effective Tax rate"
             Cells(1, 1).Value = "Year"
-            Cells(1, numFields + 4) = "D" ' Places the Debt header
+            Cells(1, numFields + 3) = "D" ' Places the Debt header
             Sheets(company + 2).Columns.AutoFit
     
     Next
