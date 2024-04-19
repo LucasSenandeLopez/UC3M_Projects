@@ -2,17 +2,24 @@ include("C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\Financia
 using Main.DCF 
 using Plots
 
-aft_ebit::Vector{Float64} = [6781.63, 7459.8, 8056.58, 8459.41, 8713.19, 8974.59];
-capex::Vector{Float64} = [-9912.16,	5337.02, 4961.43, 3885.27, 3048.39,	1593.12];
+const D = 29332000;
+const n_acciones = 2407000;
 
-amort::Vector{Float64} = [1203.84, 1324.22,	1430.16, 1501.67, 1546.72, 1593.12];
-nwc::Vector{Float64} = [267.84,	120.38,	105.94,	71.51,	45.05,	46.40];
+# Datos sacados del excel en esta misma carpeta
+aft_ebit::Vector{Float64} = [11580197.41, 12242822.99, 12852767.51, 13397989.33, 13867194.65, 14250214.58];
+
+amort::Vector{Float64} = [7945742.374, 8400402.341, 8818915.238, 9193018.716, 9514963.541, 9777772.329];
+
+capex::Vector{Float64} = [4836571.28, 5113322.69, 5368071.38, 5595788.06, 5791755.79, 5951727.43];
+
+nwc_change::Vector{Float64} = [-1625689.44, -1532666.55, -1456308.22, -1394530.78, -1345693.51, -1308524.67];
+
 rw::Float64 = 0.0661;
-g::Float64 = 0.03;
+g::Float64 = 0.02;
 
-val = dcf_model(aft_ebit, capex, amort, nwc, rw, g);
+val = dcf_model(aft_ebit, capex, amort, nwc_change, rw, g);
 
-price = (val - 41_506.00) / 2292.00
+price = (val - D) / n_acciones;
 
 price_mat::Matrix{Float64} = Matrix{Float64}(undef, (10, 10));
 
@@ -24,11 +31,12 @@ for col in 1:10
     for row in 1:10
 
         price_mat[row, col] = 
-            (dcf_model(aft_ebit, capex, amort, nwc, waccs[row], g_rates[col]) - 41_506.00) / 2292.00
+            (dcf_model(aft_ebit, capex, amort, nwc_change, waccs[row], g_rates[col]) - D) / n_acciones
 
     end
 
 end
 
-price_mat
+#price_mat
+println(price)
 

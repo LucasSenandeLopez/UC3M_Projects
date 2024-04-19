@@ -1,7 +1,5 @@
 module DCF
 
-
-
 export dcf_model, noisy_dcf_model;
 
 function dcf_model(aftertax_ebit_vector::Vector{Float64}, capex_vector::Vector{Float64},
