@@ -12,7 +12,7 @@ Sub passData()
     
     fieldNames = Array("Assets (th USD)", "BVE", "NI", "MarketCap", "RoE", _
         "RoA", "Price", "EnterpriseValue", _
-        "CommonSharesOutstanding", "Cash", "EBIT", "EBT", "Sales", "D&A")
+        "CommonSharesOutstanding", "Cash", "EBIT", "InterestExpense", "Sales", "D&A")
         
     numFields = UBound(fieldNames) - LBound(fieldNames)
    
@@ -71,6 +71,8 @@ Sub passData()
             If Cells(year - 2012, 10).Value = "n.a." Then Cells(year - 2012, 10).Value = _
                 Round(Cells(year - 2012, 5).Value / Cells(year - 2012, 8).Value)
     
+            ' ICR
+            Cells(year - 2012, numFields + 4).Value = Cells(year - 2012, 12).Value / Cells(year - 2012, 13).Value 
         Next
         
         For field = 0 To numFields
@@ -82,6 +84,7 @@ Sub passData()
             
             Cells(1, 1).Value = "Year"
             Cells(1, numFields + 3) = "D" ' Places the Debt header
+            Cells(1, numFields + 4) = "ICR"
             Sheets(company + 2).Columns.AutoFit
     
     Next
