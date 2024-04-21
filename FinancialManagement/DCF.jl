@@ -61,17 +61,22 @@ function noisy_dcf_model(aftertax_ebit_vector::Vector{Float64}, capex_vector::Ve
         dcfₜ = (aftertax_ebit_vector[t] + amortization_depreciation_vector[t] - capex_vector[t]  
         - change_nwc_vector[t]) / (1 + wacc)^t;
 
-        println("Free Cash Flow at time $t: $(dcfₜ * (1 + wacc)^t)\n",
-                "Discounted FCF at time $t: $dcfₜ\n\n")
+        print("Free Cash Flow at time $t: $(dcfₜ * (1 + wacc)^t)\n",
+                "Discount factor: $(round(1/(1 + wacc)^t, digits = 4))\n",
+                "Discounted FCF at time $t: $dcfₜ\n\n");
 
+        
         valuation += dcfₜ;
-
 
     end
 
-       
+    terminal_value = dcfₜ * (1 + terminal_growth_rate) / (wacc - terminal_growth_rate)
+
+    print("(Undiscounted) Terminal value: $(terminal_value * (1 + wacc)^length(capex_vector))\n",
+        "Discounted Terminal value: $terminal_value\n\n"); 
+
     # Adds long term growth as an annuity
-    valuation += dcfₜ * (1 + terminal_growth_rate) / (wacc - terminal_growth_rate);
+    valuation += terminal_value;
 
     return valuation;
 

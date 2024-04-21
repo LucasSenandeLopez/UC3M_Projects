@@ -3,6 +3,7 @@ using Main.DCF
 using Plots
 
 const D = 29332000;
+const cash = 22927000;
 const n_acciones = 2407000;
 
 # Datos sacados del excel en esta misma carpeta
@@ -23,7 +24,7 @@ g::Float64 = 0.02;
 
 val = noisy_dcf_model(aft_ebit, capex, amort, nwc_change, rw, g);
 
-price = (val - D) / n_acciones;
+price = (val - D + cash) / n_acciones;
 
 price_mat::Matrix{Float64} = Matrix{Float64}(undef, (10, 10));
 
@@ -35,7 +36,7 @@ for col in 1:10
     for row in 1:10
 
         price_mat[row, col] = 
-            (dcf_model(aft_ebit, capex, amort, nwc_change, waccs[row], g_rates[col]) - D) / n_acciones
+            (dcf_model(aft_ebit, capex, amort, nwc_change, waccs[row], g_rates[col]) - D + cash) / n_acciones;
 
     end
 
