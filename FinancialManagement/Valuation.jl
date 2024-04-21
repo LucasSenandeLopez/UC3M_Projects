@@ -12,12 +12,16 @@ amort::Vector{Float64} = [7945742.374, 8400402.341, 8818915.238, 9193018.716, 95
 
 capex::Vector{Float64} = [4836571.28, 5113322.69, 5368071.38, 5595788.06, 5791755.79, 5951727.43];
 
-nwc_change::Vector{Float64} = [-1625689.44, -1532666.55, -1456308.22, -1394530.78, -1345693.51, -1308524.67];
+nwc_change::Vector{Float64} = [27245.53, -634047.17, -583638.18, -521706.92, -448968.94, -366500.64];
+
+
+
+
 
 rw::Float64 = 0.0661;
 g::Float64 = 0.02;
 
-val = dcf_model(aft_ebit, capex, amort, nwc_change, rw, g);
+val = noisy_dcf_model(aft_ebit, capex, amort, nwc_change, rw, g);
 
 price = (val - D) / n_acciones;
 
