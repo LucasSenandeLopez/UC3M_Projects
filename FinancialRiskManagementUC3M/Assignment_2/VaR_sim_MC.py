@@ -130,6 +130,7 @@ ch_data.drop(["2000-03-30"], axis = 0, inplace = True); # Esta fila tiene valore
 corr_mat = ch_data.iloc[-DIAS_CHOL:, :].corr();
 chol_mat = np.linalg.cholesky(corr_mat);
 
+
 var_095 = multiple_dist_var(np.array(vol_data.iloc[-201, 1:]).flatten(), 
                                   chol_mat, [1, 2, 5, 10]);
 
@@ -146,7 +147,7 @@ var_095 = multiple_dist_var(np.array(vol_data.iloc[-201, 1:]).flatten(),
 
 print(f"Los VaRes obtenidos son: {var_095}");
    
-
+print(chol_mat)
 
 
 
