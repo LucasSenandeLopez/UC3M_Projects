@@ -6,7 +6,7 @@ using Statistics
 using Plots
 using LaTeXStrings
 
-Random.seed!(1);
+#Random.seed!(1);
 
 const CONF_LEVEL = 0.95;
 const MC_SAMPLES = 50_000;
@@ -76,16 +76,56 @@ function student_simulation(ddof::Real)
 
 end
 
+
+
+
 ddof = 6.75
 sim_results = student_simulation(ddof)[2:end];
 
-exception_prop = sum(sim_results .> portfolio_change.Change) / 6001;
+exception_num = sum(sim_results .> portfolio_change.Change);
+exception_prop =  exception_num / 6001;
 
 var_plot = plot(portfolio_change.Date, [sim_results portfolio_change.Change], size = (1000, 500),
     label = ["VaR $(CONF_LEVEL * 100)%" "Actual Change"], alpha = [1.0 0.3], color = [:Red :Blue])
+
 title!(L"VaR by $t(%$ddof)$ Monte Carlo Simulation, exception proportion = %$(round(exception_prop*100, digits = 2))%")
+
+plot!(twinx(), portfolio_data.portfolio_value[2:end], alpha = 0.4, label = "Portfolio Value", 
+    color = :Green, legend = :topright, linewidth = 3);
+
 
 plot_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\"
 plot_filepath *= "FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\BacktestingVaR_MC_Student_t($ddof).png"
 
 savefig(var_plot, plot_filepath)
+
+
+
+
+binomial_test = 1 - Distributions.cdf(Distributions.Binomial(6001, 1- CONF_LEVEL), exception_num - 1)
+
+println("The probability of having $exception_num exceptions is $binomial_test
+under a Binomial distributions n = 6001, p = $exception_prop")
+
+if (binomial_test < 0.05)
+    println("Therefore, the binomial test rejects the model\n");
+else
+    println("Therefore, the binomial test does not reject the model\n");
+end
+
+
+p = 1 - CONF_LEVEL;
+
+kupieck_statistic = -2*log(((1 - p)^(6001 - exception_num)) * (p^exception_num));
+kupieck_statistic += 2*log(((1 - exception_prop)^(6001 - exception_num)) * (exception_prop^exception_num));
+
+crit_value_chisq = quantile(Distributions.Chisq(1), CONF_LEVEL)
+
+println("We have a Kupieck Statistic of $kupieck_statistic, the critical value of its
+correspinding χ²(1) distributions is : $crit_value_chisq")
+if (kupieck_statistic < crit_value_chisq)
+    print("so we reject the model under the Kupieck test");
+else
+    print("so we cannot reject the model under the Kupieck test");
+end
+
