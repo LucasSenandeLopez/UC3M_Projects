@@ -1,6 +1,9 @@
 import numpy as np;
 import pandas as pd;
 import matplotlib.pyplot as plt;
+import scipy.stats as stats;
+
+plt.style.use("ggplot");
 
 portfolio_filepath  = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\";
 portfolio_filepath += "UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignment_3\\PortfolioChange.csv";
@@ -8,38 +11,113 @@ portfolio_filepath += "UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignm
 portfolio_change = pd.read_csv(portfolio_filepath, date_format = "dd/mm/yyyy");
 
 
+
 BACKTESTING_WINDOW = 1_000;
 CONF_LEVEL = 0.95;
 SERIES_LENGTH = len(portfolio_change.Change);
 
-def hist_sim_var(change_arr : np.ndarray):
+INT_CONF = round(CONF_LEVEL * 100);
+N = SERIES_LENGTH - BACKTESTING_WINDOW;
+P = round(1 - CONF_LEVEL, 4);
+
+fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
+fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVarBacktesting{INT_CONF}.png";
+
+def hist_sim_var(change_arr : np.ndarray, window : int):
 
     global BACKTESTING_WINDOW;
     global CONF_LEVEL;
 
-    bruh = 0;
-
     length = len(change_arr);
 
-    result_arr = np.array([np.quantile(change_arr[(i - BACKTESTING_WINDOW):i], 1 - CONF_LEVEL) \
-                           for i in range(BACKTESTING_WINDOW, length, 1)], dtype="float32");
+    result_arr = np.array([np.quantile(change_arr[(i - window):i], 1 - CONF_LEVEL) \
+                           for i in range(window, length, 1)], dtype="float32");
 
     return result_arr;
 
 change_arr = np.array(portfolio_change.Change);
-var = hist_sim_var(change_arr)
+var = hist_sim_var(change_arr, BACKTESTING_WINDOW);
 
 n_exceptions = np.sum(change_arr[BACKTESTING_WINDOW:] < var)
 exception_prop = n_exceptions / (len(portfolio_change.Change) -   BACKTESTING_WINDOW)
 
-fig, ax = plt.subplots(figsize = (12,6))
-ax.plot(portfolio_change.Date[BACKTESTING_WINDOW:], var, label = "VaR 95%")
-ax.plot(portfolio_change.Date[BACKTESTING_WINDOW:], portfolio_change.Change[BACKTESTING_WINDOW:], \
+fig, ax = plt.subplots(figsize = (14,8))
+plt.plot(portfolio_change.Date[BACKTESTING_WINDOW:], var)
+plt.plot(portfolio_change.Date[BACKTESTING_WINDOW:], portfolio_change.Change[BACKTESTING_WINDOW:], \
          label = "Actual change", alpha = 0.3)
 
-ax.set_title(f"We had {n_exceptions} exceptions with a proportion of {round(exception_prop, 4)}")
+ax.set_title(f"{n_exceptions} exceptions from a sample of {N} with a proportion of {round(exception_prop, 4)}")
 plt.xticks([portfolio_change.Date[i] for i in range(BACKTESTING_WINDOW, SERIES_LENGTH, 500)])
+plt.tick_params(axis='x', labelrotation=45)
+plt.legend([f"VaR {round(CONF_LEVEL*100,2)}%","Actual Change"])
+
+plt.savefig(fig_filepath)
 plt.show()
 
+plt.clf()
 
-   
+
+
+binom_test = 1 - stats.binom.cdf(n_exceptions - 1, SERIES_LENGTH - BACKTESTING_WINDOW, 1 - CONF_LEVEL);
+
+model_message = f"The probability of having {n_exceptions} or more out of {N} samples ";
+model_message += f"under a Binom({N}, {P}) is {round(binom_test, 4)}";
+
+print(model_message); 
+
+if binom_test < 0.05:
+     
+    print("Therefore, we reject the model under the binomial test"); 
+
+else:
+     
+    print("Thus, we do not have evidence to reject the model under the binomial test");
+
+
+
+
+# We are going to prform an analysis to find the best window
+# WARNING: It took 4 minutes in my computer to run the analysis
+def window_analysis():
+
+    global CONF_LEVEL;
+    global SERIES_LENGTH;
+    global INT_CONF;
+
+    fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
+    fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVaRWindowAnalysis{INT_CONF}.png";
+
+    tests = np.zeros(int((4000 - 250)/5) + 1);
+    wind_sizes = [i for i in range(250, 4000 + 1, 5)];
+
+    for window_size in wind_sizes:
+
+        var = hist_sim_var(change_arr, window_size);
+
+        n_exceptions = np.sum(change_arr[window_size:] < var) 
+
+        binom_test = 1 - stats.binom.cdf(n_exceptions - 1, SERIES_LENGTH - window_size, 1 - CONF_LEVEL);
+
+        tests[int((window_size - 250)/5)] = binom_test;
+
+
+    fig, ax = plt.subplots(figsize = (14,8));
+    plt.plot(wind_sizes, tests, label = "Test stat");
+    plt.plot(wind_sizes, [0.05 for i in wind_sizes], label = "Rejection level");
+
+    ax.set_xlabel("Window size");
+    ax.set_ylabel("Binomial test stat");
+
+    ax.set_title(f"Binomial test value by window size for VaR {round(CONF_LEVEL*100, 2)}%")
+    plt.xticks([i for i in range(250, 4000 + 1, 500)])
+
+    plt.legend(["Test statistic","Rejection level"]);
+
+    plt.savefig(fig_filepath)
+    plt.show()
+
+
+    plt.clf()
+
+
+window_analysis()

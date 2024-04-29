@@ -102,9 +102,9 @@ savefig(var_plot, plot_filepath)
 
 
 
-binomial_test = 1 - Distributions.cdf(Distributions.Binomial(6001, 1- CONF_LEVEL), exception_num - 1)
+binomial_test = 1 - Distributions.cdf(Distributions.Binomial(6001, 1 - CONF_LEVEL), exception_num - 1)
 
-println("The probability of having $exception_num exceptions is $binomial_test
+println("The probability of having $exception_num exceptions or more is $binomial_test
 under a Binomial distributions n = 6001, p = $exception_prop")
 
 if (binomial_test < 0.05)
