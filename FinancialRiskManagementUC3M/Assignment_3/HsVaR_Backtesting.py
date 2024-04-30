@@ -5,46 +5,65 @@ import scipy.stats as stats;
 
 plt.style.use("ggplot");
 
-portfolio_filepath  = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\";
-portfolio_filepath += "UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignment_3\\PortfolioChange.csv";
+portfolio_change_filepath  = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\";
+portfolio_change_filepath += "UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignment_3\\";
 
-portfolio_change = pd.read_csv(portfolio_filepath, date_format = "dd/mm/yyyy");
+portfolio_value_filepath = portfolio_change_filepath + "PortfolioData.csv";
+portfolio_change_filepath += "PortfolioChange.csv";
+
+
+portfolio_change = pd.read_csv(portfolio_change_filepath, date_format = "dd/mm/yyyy");
+portfolio_value = pd.read_csv(portfolio_value_filepath, date_format = "dd/mm/yyyy");
 
 # These global constants allow us to easily change the parameters of the model
-BACKTESTING_WINDOW = 1_000;
+BACKTESTING_WINDOW = 1000;
 CONF_LEVEL = 0.95;
 SERIES_LENGTH = len(portfolio_change.Change);
 N = SERIES_LENGTH - BACKTESTING_WINDOW;
 P = round(1 - CONF_LEVEL, 4);
+PORTFOLIO_VALUES = np.array(portfolio_value.portfolio_value, dtype = "float32");
 
 # Int Conf is only used to simplify plot headers
 INT_CONF = round(CONF_LEVEL * 100);
 
+assert ((BACKTESTING_WINDOW < 6001) and (BACKTESTING_WINDOW > 0)), "The time window has to be in [1, 6000]"
+assert ((CONF_LEVEL < 1) and (CONF_LEVEL > 0)), "The confidence level must be in (0, 1)"
 
-fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
-fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVarBacktesting{INT_CONF}.png";
+fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\FinancialRiskManagementUC3M";
+fig_filepath += "\\Data\\Plots\\Backtesting\\HsVaR";
+fig_filepath += f"\\HsVarBacktesting{INT_CONF}CONF{BACKTESTING_WINDOW}SAMPLES.png";
 
 def hist_sim_var(change_arr : np.ndarray, window : int):
     """
     Runs a historic simulation VaR on the array of daily changes that you input using the
     specified time window
 
-    Parameters: Global constant for the confidence level, the specified window and the array
-    of daily changes of the series
+    Parameters: Global constant for the confidence level and the values of the portfolio, 
+    the specified window and the array of daily changes of the series
     """
     global CONF_LEVEL;
+    global PORTFOLIO_VALUES;
 
     length = len(change_arr);
 
     result_arr = np.array([np.quantile(change_arr[(i - window):i], 1 - CONF_LEVEL) \
                            for i in range(window, length, 1)], dtype="float32");
 
+    # Because we are using log changes, we have to scale them back
+    result_arr = PORTFOLIO_VALUES[(window - 1):-2] * (np.exp(result_arr) - 1); 
+    
     return result_arr;
 
-change_arr = np.array(portfolio_change.Change);
+
+
+
+change_arr = np.array(portfolio_change.Change_perc);
+
+absolute_change_arr = np.array(portfolio_change.Change);
+
 var = hist_sim_var(change_arr, BACKTESTING_WINDOW);
 
-n_exceptions = np.sum(change_arr[BACKTESTING_WINDOW:] < var)
+n_exceptions = np.sum(absolute_change_arr[BACKTESTING_WINDOW:] < var)
 exception_prop = n_exceptions / (len(portfolio_change.Change) - BACKTESTING_WINDOW)
 
 fig, ax = plt.subplots(figsize = (14,8))
@@ -61,6 +80,9 @@ plt.savefig(fig_filepath)
 plt.show()
 
 plt.clf()
+
+
+
 
 
 
@@ -92,6 +114,8 @@ def window_analysis():
     global CONF_LEVEL;
     global SERIES_LENGTH;
     global INT_CONF;
+    global change_arr;
+    global absolute_change_arr;
 
     fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
     fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVaRWindowAnalysis{INT_CONF}.png";
@@ -103,7 +127,7 @@ def window_analysis():
 
         var = hist_sim_var(change_arr, window_size);
 
-        n_exceptions = np.sum(change_arr[window_size:] < var) 
+        n_exceptions = np.sum(absolute_change_arr[window_size:] < var) 
 
         binom_test = 1 - stats.binom.cdf(n_exceptions - 1, SERIES_LENGTH - window_size, 1 - CONF_LEVEL);
 
@@ -133,5 +157,4 @@ def window_analysis():
 Warning; this took 4 minutes to run on my computer, the plots for the 95, 99 and 99.9% confidence
 levels are available in the Data/Plots/Backtesting folder already
 """
-
 #window_analysis()

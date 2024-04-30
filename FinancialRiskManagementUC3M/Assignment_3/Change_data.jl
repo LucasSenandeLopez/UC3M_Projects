@@ -54,7 +54,7 @@ portfolio_change = Vector{Float32}(undef, lastindex(Change_intel));
 end
 
 
-portfolio_value_col = sum(portfolio_value; dims = 2)
+portfolio_value_col = reshape(sum(portfolio_value; dims = 2), :)
 
 
 portfolio = DataFrame(:Date => close_data.Date, 
@@ -63,9 +63,9 @@ portfolio = DataFrame(:Date => close_data.Date,
     :Value_jpmorgan => portfolio_value[:, 3],
     :Value_microsoft => portfolio_value[:, 4],
     :Value_pfizer => portfolio_value[:, 5],
-    :portfolio_value => reshape(portfolio_value_col, :))
+    :portfolio_value => portfolio_value_col)
 
-change_df = DataFrame(:Date => close_data.Date[2:end], :Change => portfolio_change)
+change_df = DataFrame(:Date => close_data.Date[2:end], :Change => portfolio_change, :Change_perc => portfolio_change ./ portfolio_value_col[2:end])
 
 CSV.write(portfolio_filepath, portfolio);
 CSV.write(change_filepath, change_df);

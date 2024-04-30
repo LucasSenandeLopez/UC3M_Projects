@@ -112,8 +112,8 @@ plot!(twinx(), portfolio_data.portfolio_value[2:end], alpha = 0.4, label = "Port
 =#
 
 plot_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\"
-plot_filepath *= "FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\BacktestingVaR_MC_Student_t($ddof).png"
-
+plot_filepath *= "FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\SimMCVaR"
+plot_filepath *= "\\BacktestingVaR_MC_Student_t($ddof).png"
 savefig(var_plot, plot_filepath)
 
 
