@@ -10,22 +10,28 @@ portfolio_filepath += "UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignm
 
 portfolio_change = pd.read_csv(portfolio_filepath, date_format = "dd/mm/yyyy");
 
-
-
+# These global constants allow us to easily change the parameters of the model
 BACKTESTING_WINDOW = 1_000;
 CONF_LEVEL = 0.95;
 SERIES_LENGTH = len(portfolio_change.Change);
-
-INT_CONF = round(CONF_LEVEL * 100);
 N = SERIES_LENGTH - BACKTESTING_WINDOW;
 P = round(1 - CONF_LEVEL, 4);
+
+# Int Conf is only used to simplify plot headers
+INT_CONF = round(CONF_LEVEL * 100);
+
 
 fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
 fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVarBacktesting{INT_CONF}.png";
 
 def hist_sim_var(change_arr : np.ndarray, window : int):
+    """
+    Runs a historic simulation VaR on the array of daily changes that you input using the
+    specified time window
 
-    global BACKTESTING_WINDOW;
+    Parameters: Global constant for the confidence level, the specified window and the array
+    of daily changes of the series
+    """
     global CONF_LEVEL;
 
     length = len(change_arr);
@@ -39,7 +45,7 @@ change_arr = np.array(portfolio_change.Change);
 var = hist_sim_var(change_arr, BACKTESTING_WINDOW);
 
 n_exceptions = np.sum(change_arr[BACKTESTING_WINDOW:] < var)
-exception_prop = n_exceptions / (len(portfolio_change.Change) -   BACKTESTING_WINDOW)
+exception_prop = n_exceptions / (len(portfolio_change.Change) - BACKTESTING_WINDOW)
 
 fig, ax = plt.subplots(figsize = (14,8))
 plt.plot(portfolio_change.Date[BACKTESTING_WINDOW:], var)
@@ -76,9 +82,12 @@ else:
 
 
 
-# We are going to prform an analysis to find the best window
-# WARNING: It took 4 minutes in my computer to run the analysis
+
 def window_analysis():
+    """
+    Runs an analysis on how the binomial test statistic changes with differenf windows
+    ranging from 250 to 4000 with a step value of 5
+    """
 
     global CONF_LEVEL;
     global SERIES_LENGTH;
@@ -87,7 +96,7 @@ def window_analysis():
     fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
     fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVaRWindowAnalysis{INT_CONF}.png";
 
-    tests = np.zeros(int((4000 - 250)/5) + 1);
+    tests = np.zeros(int((4000 - 250)/5) + 1); #Dimensions + 1 because of 1-based indexing
     wind_sizes = [i for i in range(250, 4000 + 1, 5)];
 
     for window_size in wind_sizes:
@@ -120,4 +129,9 @@ def window_analysis():
     plt.clf()
 
 
-window_analysis()
+"""
+Warning; this took 4 minutes to run on my computer, the plots for the 95, 99 and 99.9% confidence
+levels are available in the Data/Plots/Backtesting folder already
+"""
+
+#window_analysis()
