@@ -118,7 +118,7 @@ def window_analysis():
     global absolute_change_arr;
 
     fig_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects";
-    fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVaRWindowAnalysis{INT_CONF}.png";
+    fig_filepath += f"\\FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\HsVar\\HsVaRWindowAnalysis{INT_CONF}.png";
 
     tests = np.zeros(int((4000 - 250)/5) + 1); #Dimensions + 1 because of 1-based indexing
     wind_sizes = [i for i in range(250, 4000 + 1, 5)];
