@@ -104,7 +104,6 @@ else:
 
 
 
-
 def window_analysis():
     """
     Runs an analysis on how the binomial test statistic changes with differenf windows

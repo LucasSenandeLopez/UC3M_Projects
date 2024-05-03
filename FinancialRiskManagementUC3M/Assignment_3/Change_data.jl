@@ -12,7 +12,11 @@ portfolio_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Proje
 portfolio_filepath *= "FinancialRiskManagementUC3M\\Data\\Assignment_3\\PortfolioData.csv"
 
 change_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\"
-change_filepath *= "FinancialRiskManagementUC3M\\Data\\Assignment_3\\PortfolioChange.csv"
+change_filepath *= "FinancialRiskManagementUC3M\\Data\\Assignment_3\\"
+
+vol_filepath = change_filepath * "PortfolioVol.csv";
+
+change_filepath *= "PortfolioChange.csv";
 
 close_data = DataFrame(CSV.File(close_filepath, dateformat = "dd/mm/yyyy"))
 
@@ -65,11 +69,18 @@ portfolio = DataFrame(:Date => close_data.Date,
     :Value_pfizer => portfolio_value[:, 5],
     :portfolio_value => portfolio_value_col)
 
-change_df = DataFrame(:Date => close_data.Date[2:end], :Change => portfolio_change, :Change_perc => portfolio_change ./ portfolio_value_col[2:end])
+
+portfolio_perc_change = portfolio_change ./ portfolio_value_col[2:end]
+
+portfolio_vol = @views [std(portfolio_perc_change[i-59:i]) for i in 60:lastindex(portfolio_perc_change)];
+
+change_df = DataFrame(:Date => close_data.Date[2:end], :Change => portfolio_change, :Change_perc => portfolio_perc_change)
+
+vol_df = DataFrame(:Date => close_data.Date[61:end], :portfolio_vol => portfolio_vol);
 
 CSV.write(portfolio_filepath, portfolio);
 CSV.write(change_filepath, change_df);
-
+CSV.write(vol_filepath, vol_df);
 
 
 

@@ -78,8 +78,8 @@ saldo_initial=1000000
 portfolio_change_filepath  = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\";
 portfolio_change_filepath += "\\UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignment_3";
 
-portfolio_value_filepath = portfolio_change_filepath + "\\PortfolioData.csv";
 
+portfolio_value_filepath = portfolio_change_filepath + "\\PortfolioData.csv";
 
 portfolio_value = pd.read_csv(portfolio_value_filepath, date_format = "dd/mm/yyyy");
 portfolio_value=portfolio_value[["Date","portfolio_value"]]
@@ -87,7 +87,6 @@ portfolio_value=portfolio_value[["Date","portfolio_value"]]
 
 path_close="C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignment_2\\CloseData.csv"
 closed_data=pd.read_csv(path_close, date_format = "dd/mm/yyyy")
-
 
 
 closed_data=closed_data.merge(portfolio_value,on="Date")
@@ -149,6 +148,7 @@ for i in range(BACKTESTING_WINDOW):
     saldo_pfizer=acc_pfizer*specific_df["Close_pfizer"].iloc[-1]
     saldos=[saldo_intel,saldo_exxon,saldo_jpmorgan,saldo_microsoft,saldo_pfizer]
     
+
     result_step=get_Parametric_Beta_VAR(specific_df,saldos,CONF_LEVEL)
 
     result_list.append([last_date[0].values[0]]+[-1*result_step[0]]+[-1*result_step[1]])
@@ -156,6 +156,7 @@ for i in range(BACKTESTING_WINDOW):
     specific_df.drop(specific_df.index[-1:], inplace=True)
 
     last_date=[specific_df["Date"][-1:]]
+
     last_value=specific_df["portfolio_value"][-1:]
     
 
@@ -179,8 +180,6 @@ len_sample=len(result_df)
 
 proportion_beta=exceptions_beta/len_sample
 proportion_parametric=exceptions_parametric/len_sample
-
-
 
 fig, ax = plt.subplots(figsize = (14,8))
 plt.plot(result_df["Date"], result_df["Var_parametric"])
@@ -260,8 +259,6 @@ else:
 print()
 print()
 print()
-
-
 
 
 
