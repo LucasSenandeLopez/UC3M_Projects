@@ -16,7 +16,7 @@ portfolio_change = pd.read_csv(portfolio_change_filepath, date_format = "dd/mm/y
 portfolio_value = pd.read_csv(portfolio_value_filepath, date_format = "dd/mm/yyyy");
 
 # These global constants allow us to easily change the parameters of the model
-BACKTESTING_WINDOW = 1000;
+BACKTESTING_WINDOW = 2150;
 CONF_LEVEL = 0.95;
 SERIES_LENGTH = len(portfolio_change.Change);
 N = SERIES_LENGTH - BACKTESTING_WINDOW;

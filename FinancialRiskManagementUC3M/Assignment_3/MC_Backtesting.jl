@@ -6,12 +6,18 @@ using Statistics
 using Plots
 using LaTeXStrings
 
-#Uncomment this line or set a specific seed if you want fixed results
-#Random.seed!(1);
+#=
+    Uncomment this line or set a specific seed if you want fixed results; 
+    if the sample size is large enough, the effect from this should be minimal.
+=#
+Random.seed!(1);
 
 #Parameters of the simulations
-const CONF_LEVEL = 0.95;
+const CONF_LEVEL = 0.99;
 const MC_SAMPLES = 50_000;
+const C_INT = round(CONF_LEVEL * 100; digits = 0)
+
+p = round(1 - CONF_LEVEL; digits = 3);
 
 portfolio_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\";
 portfolio_filepath *= "UC3M_Projects\\FinancialRiskManagementUC3M\\Data\\Assignment_3\\PortfolioData.csv";
@@ -53,7 +59,7 @@ function normal_simulation()
     @inbounds for row in 1:6002
 
         mat = randn(MC_SAMPLES, 5) * chol_mat .* Vector{Float32}(volatility_data[row, 3:end])';
-        returns_vector = mat * Vector{Float32}(portfolio_data[row, 2:end - 1]);
+        returns_vector = (exp.(mat) .- Float32(1.0)) * Vector{Float32}(portfolio_data[row, 2:end - 1]);
 
         var_vector[row] = quantile(returns_vector, 1 - CONF_LEVEL);
 
@@ -79,7 +85,7 @@ function student_simulation(ddof::Real)
     @inbounds for row in 1:6002
 
         mat = rand(dist, (MC_SAMPLES, 5)) * chol_mat .* Vector{Float32}(volatility_data[row, 3:end])';
-        returns_vector = mat * Vector{Float32}(portfolio_data[row, 2:end - 1]);
+        returns_vector = (exp.(mat) .- Float32(1.0)) * Vector{Float32}(portfolio_data[row, 2:end - 1]);
 
         var_vector[row] = quantile(returns_vector, 1 - CONF_LEVEL);
 
@@ -92,14 +98,15 @@ end
 
 
 
-ddof = 6.75
+ddof = 4.85
 sim_results = student_simulation(ddof)[2:end]; # We take only the values for which actual change is computed
+
 
 exception_num = sum(sim_results .> portfolio_change.Change);
 exception_prop =  exception_num / 6001;
 
 var_plot = plot(portfolio_change.Date, [sim_results portfolio_change.Change], size = (1000, 500),
-    label = ["VaR $(CONF_LEVEL * 100)%" "Actual Change"], alpha = [1.0 0.3], color = [:Red :Blue])
+    label = ["VaR $(CONF_LEVEL * 100)% t($ddof)" "Actual Change"], alpha = [1.0 0.3], color = [:Red :Blue])
 
 title!(L"VaR by $t(%$ddof)$ Monte Carlo Simulation, exception proportion = %$(round(exception_prop*100, digits = 2))%")
 
@@ -113,7 +120,7 @@ plot!(twinx(), portfolio_data.portfolio_value[2:end], alpha = 0.4, label = "Port
 
 plot_filepath = "C:\\Users\\goomb\\OneDrive\\Documentos\\GitHub\\UC3M_Projects\\"
 plot_filepath *= "FinancialRiskManagementUC3M\\Data\\Plots\\Backtesting\\SimMCVaR"
-plot_filepath *= "\\BacktestingVaR_MC_Student_t($ddof).png"
+plot_filepath *= "\\BacktestingVaR_MC_Student_t($ddof)$C_INT.png"
 savefig(var_plot, plot_filepath)
 
 
@@ -122,7 +129,7 @@ savefig(var_plot, plot_filepath)
 binomial_test = 1 - Distributions.cdf(Distributions.Binomial(6001, 1 - CONF_LEVEL), exception_num - 1)
 
 println("The probability of having $exception_num exceptions or more is $binomial_test
-under a Binomial distributions n = 6001, p = $exception_prop")
+under a Binomial distributions n = 6001, p = $p)")
 
 if (binomial_test < 0.05)
     println("Therefore, the binomial test rejects the model\n");
@@ -134,7 +141,7 @@ end
 NOTE: Due to the low proportion and large sample size, the Kupieck Stat does not work properly,
 this is implemented only as a proof of conept on how it could work
 =#
-p = 1 - CONF_LEVEL;
+
 
 kupieck_statistic = -2*log(((1 - p)^(6001 - exception_num)) * (p^exception_num));
 kupieck_statistic += 2*log(((1 - exception_prop)^(6001 - exception_num)) * (exception_prop^exception_num));
@@ -143,9 +150,9 @@ crit_value_chisq = quantile(Distributions.Chisq(1), CONF_LEVEL)
 
 println("We have a Kupieck Statistic of $kupieck_statistic, the critical value of its
 correspinding χ²(1) distributions is : $crit_value_chisq")
-if (kupieck_statistic < crit_value_chisq)
-    print("so we reject the model under the Kupieck test");
+if (kupieck_statistic > crit_value_chisq)
+    print("so we reject the model under the Kupieck test.");
 else
-    print("so we cannot reject the model under the Kupieck test");
+    print("so we cannot reject the model under the Kupieck test.");
 end
 
