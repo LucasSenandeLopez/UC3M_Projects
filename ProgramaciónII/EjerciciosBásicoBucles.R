@@ -71,7 +71,35 @@ ex_3 <- function(vec)
   }
   
   cat("Hay ", length(vec[vec == num]), " ocurrencias de ", num, " en", vec, "\n")
+  
+  
+  i <- 1
+  len <- length(vec)
+  count <- 0
+  
+  while (i <= len)
+  {
+    if(vec[[i]] == num){count <- count + 1}
+    
+    i <- i + 1
+  }
+  
+  print(count)
+  
+  i <- 1
+  count <- 0
+  repeat
+  {
+    if(vec[[i]] == num){count <- count + 1}
+    
+    i <- i + 1
+    
+    if(i > len){break}
+  }
+  print(count)
 }
+
+  
 
 ex_4 <- function(vec)
 {
@@ -80,10 +108,40 @@ ex_4 <- function(vec)
     num <- scan(,what=double(),1)
   }
   
+  temp <- num
+  len <- length(vec)
+  
   for(i in vec)
   {
     num <- num*i
   }
   
   cat("Ahora el número es: ", num, "\n")
+  
+  num <- temp
+  i <- 1
+  
+  while (i <= len)
+  {
+    num <- num * vec[[i]]
+    i <- i + 1
+  }
+  
+  cat("Ahora el número es: ", num, "\n")
+
+  
+  num <- temp
+  i <- 1
+  
+  repeat
+  {
+    num <- num * vec[[i]]
+    i <- i + 1
+    
+    
+    if(i > len){break}
+  }
+  
+  cat("Ahora el número es: ", num, "\n")
+
 }
